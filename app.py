@@ -1,82 +1,53 @@
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from flask import Flask, Response
+import euromillions_live_dashboard_v2 as euro
+import superenalotto_live_dashboard as supereno
 
-class Handler(BaseHTTPRequestHandler):
+app = Flask(__name__)
 
-    def do_GET(self):
+@app.route("/")
+def home():
+    return """
+    <html>
+    <head>
+        <title>Lottery Dashboard</title>
+        <style>
+            body {
+                background: #0b0f19;
+                color: white;
+                font-family: Arial, sans-serif;
+                padding: 30px;
+            }
+            a {
+                color: #4dd0ff;
+                font-size: 22px;
+            }
+            h1 { margin-bottom: 10px; }
+            ul { line-height: 2; }
+        </style>
+    </head>
+    <body>
+        <h1>Lottery Dashboard</h1>
+        <p>Server running on Render</p>
+        <h2>Available dashboards</h2>
+        <ul>
+            <li><a href="/euromillions">EuroMillions</a></li>
+            <li><a href="/superenalotto">SuperEnalotto</a></li>
+        </ul>
+    </body>
+    </html>
+    """
 
-        if self.path == "/":
-            self.send_response(200)
-            self.send_header("Content-type", "text/html")
-            self.end_headers()
+@app.route("/euromillions")
+def euromillions():
+    payload = euro.build_dashboard_payload()
+    html = euro.render_html(payload)
+    return Response(html, mimetype="text/html")
 
-            html = """
-            <html>
-            <head>
-                <title>Lottery Dashboard</title>
-            </head>
-            <body style="font-family: Arial; background:#111; color:white;">
-                <h1>Lottery Dashboard</h1>
+@app.route("/superenalotto")
+def superenalotto():
+    payload = supereno.build_dashboard_payload()
+    html = supereno.render_html(payload)
+    return Response(html, mimetype="text/html")
 
-                <p>Server running on Render</p>
-
-                <h2>Available dashboards</h2>
-
-                <ul>
-                    <li><a href="/euromillions" style="color:cyan;">EuroMillions</a></li>
-                    <li><a href="/superenalotto" style="color:cyan;">SuperEnalotto</a></li>
-                </ul>
-
-            </body>
-            </html>
-            """
-
-            self.wfile.write(html.encode())
-
-
-        elif self.path == "/euromillions":
-            self.send_response(200)
-            self.send_header("Content-type", "text/html")
-            self.end_headers()
-
-            html = """
-            <html>
-            <body style="background:#111;color:white;font-family:Arial;">
-            <h1>EuroMillions Dashboard</h1>
-            <p>EuroMillions section working.</p>
-            </body>
-            </html>
-            """
-
-            self.wfile.write(html.encode())
-
-
-        elif self.path == "/superenalotto":
-            self.send_response(200)
-            self.send_header("Content-type", "text/html")
-            self.end_headers()
-
-            html = """
-            <html>
-            <body style="background:#111;color:white;font-family:Arial;">
-            <h1>SuperEnalotto Dashboard</h1>
-            <p>SuperEnalotto section working.</p>
-            </body>
-            </html>
-            """
-
-            self.wfile.write(html.encode())
-
-
-        else:
-            self.send_response(404)
-            self.end_headers()
-
-
-def run():
-    port = 10000
-    server = HTTPServer(("", port), Handler)
-    print("Lottery Dashboard running")
-    server.serve_forever()
-
-
-run()
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=10000)
