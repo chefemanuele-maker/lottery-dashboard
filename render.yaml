@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: lottery-intelligence-hub
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    autoDeploy: true
